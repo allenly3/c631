@@ -1,0 +1,5 @@
+Compile trapezoid rule program with:
+
+mpicc -O2 trapezoid.c  trapezoid_rule.c  func.c
+
+
