@@ -79,7 +79,7 @@ int main(int argc, char *argv[]) {
                         flag = 0 ;
                         
                     }else{
-                        printf("Go Next Round.\n");
+                        printf("Got big Improvement, Go Next Round.\n\n");
                         p0MinValue = minHolder;
                     }
                       
