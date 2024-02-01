@@ -19,7 +19,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
     for (i = 0; i < n; i++) {
-        block_lengths[i] = 1;
+        block_lengths[i] = n-i;
         displacements[i] = (n+1)*i;
     }
     MPI_Type_indexed(n, block_lengths, displacements,
