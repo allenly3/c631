@@ -7,8 +7,11 @@ int main(int argc, char* argv[]) {
     int p;
     int my_rank;
     float         A[n][n];          /* Complete Matrix */
-    float         diagonal[n];       /* Diagonal Elements */
-    MPI_Datatype  struct_mpi_t;
+    float         T[n][n];          /* Upper Triangle  */
+    int           displacements[n];
+    int           block_lengths[n];
+    MPI_Datatype  index_mpi_t;
+    MPI_Datatype  diagonal_mpi_t;   /* MPI datatype for diagonal elements */
     int           i, j;
     MPI_Status    status;
 
@@ -16,45 +19,41 @@ int main(int argc, char* argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &p);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
 
-    MPI_Aint displacements[n];
-    int block_lengths[n];
-    MPI_Datatype types[n];
-
-    // Create MPI datatype for diagonal elements using MPI_Type_create_struct
     for (i = 0; i < n; i++) {
         block_lengths[i] = 1;
-        MPI_Get_address(&diagonal[i], &displacements[i]);
-        displacements[i] -= (MPI_Aint)&diagonal[0];
-        types[i] = MPI_FLOAT;
+        displacements[i] = (n+1)*i;
     }
+    MPI_Type_indexed(n, block_lengths, displacements,
+        MPI_FLOAT, &index_mpi_t);
+    MPI_Type_commit(&index_mpi_t);
 
-    MPI_Type_create_struct(n, block_lengths, displacements, types, &struct_mpi_t);
-    MPI_Type_commit(&struct_mpi_t);
+    /* Define MPI datatype for diagonal elements */
+    MPI_Type_vector(n, 1, n+1, MPI_FLOAT, &diagonal_mpi_t);
+    MPI_Type_commit(&diagonal_mpi_t);
 
     if (my_rank == 0) {
         for (i = 0; i < n; i++)
             for (j = 0; j < n; j++)
                 A[i][j] = (float) i + j;
 
-        // Extract diagonal elements and send
-        for (i = 0; i < n; i++)
-            diagonal[i] = A[i][i];
-
-        MPI_Send(diagonal, 1, struct_mpi_t, 1, 0, MPI_COMM_WORLD);
+        /* Send only the diagonal elements using the new datatype */
+        MPI_Send(&A[0][0], 1, diagonal_mpi_t, 1, 0, MPI_COMM_WORLD);
     } else { /* my_rank == 1 */
         for (i = 0; i < n; i++)
-            diagonal[i] = 0.0;
+            for (j = 0; j < n; j++)
+                T[i][j] = 0.0;
 
-        MPI_Recv(diagonal, 1, struct_mpi_t, 0, 0, MPI_COMM_WORLD, &status);
+        /* Receive only the diagonal elements using the new datatype */
+        MPI_Recv(&T[0][0], 1, diagonal_mpi_t, 0, 0, MPI_COMM_WORLD, &status);
 
-        // Print received diagonal elements
-        for (i = 0; i < n; i++)
-            printf("%4.1f ", diagonal[i]);
-
-        printf("\n");
+        for (i = 0; i < n; i++) {
+            for (j = 0; j < n; j++)
+                printf("%4.1f ", T[i][j]);
+            printf("\n");
+        }
     }
 
-    MPI_Type_free(&struct_mpi_t);
+    MPI_Type_free(&diagonal_mpi_t);
     MPI_Finalize();
     return 0;
 }
