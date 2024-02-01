@@ -21,14 +21,22 @@ int main(int argc, char* argv[]) {
 
     for (i = 0; i < n; i++) {
         block_lengths[i] = 1;
-        displacements[i] = (n+1)*i;
+        displacements[i] = i * (n + 1);  // Corrected displacement calculation
     }
     MPI_Type_indexed(n, block_lengths, displacements,
         MPI_FLOAT, &index_mpi_t);
     MPI_Type_commit(&index_mpi_t);
 
-    /* Define MPI datatype for diagonal elements */
-    MPI_Type_vector(n, 1, n+1, MPI_FLOAT, &diagonal_mpi_t);
+    /* Define MPI datatype for diagonal elements using MPI_Type_create_struct */
+    MPI_Aint displacements_diag[n];
+    MPI_Datatype types[n];
+
+    for (i = 0; i < n; i++) {
+        displacements_diag[i] = (n+1)*i * sizeof(float);
+        types[i] = MPI_FLOAT;
+    }
+
+    MPI_Type_create_struct(n, block_lengths, displacements_diag, types, &diagonal_mpi_t);
     MPI_Type_commit(&diagonal_mpi_t);
 
     if (my_rank == 0) {
