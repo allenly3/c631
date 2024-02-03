@@ -30,12 +30,12 @@ int main(int argc, char* argv[]) {
 
     MPI_Barrier(MPI_COMM_WORLD);  // Synchronize before starting the communication
     
-    for(time = 0 ; time < n/block; time ++){ // 16/4 = 4 , so need 4 times to 
+    for(time = 0 ; time < n/block_size; time ++){ // 16/4 = 4 , so need 4 times to 
      MPI_Barrier(MPI_COMM_WORLD);  // Synchronize before starting the communication
      //printf("Sendinng Row:  %d :\n", time);
         if (my_rank < 4) {  // Only the first 4 processes participate
-            start_row = (my_rank / 2 + time) * block_size;
-            start_col = (my_rank % 2) * block_size;
+            start_row = (my_rank / block_size + time) * block_size;
+            start_col = (my_rank % block_size) * block_size;
 
             if (my_rank == 0) {
                 // Process 0 sends and receives the same block to itself
@@ -61,8 +61,8 @@ int main(int argc, char* argv[]) {
 
         if (my_rank == 0) {
             for (i = 1; i < num_procs && i < 4; i++) {   // Process 0 sends blocks to other processes
-                start_row = (i / 2 + time) * block_size;
-                start_col = (i % 2) * block_size;
+                start_row = (i / block_size + time) * block_size;
+                start_col = (i % block_size) * block_size;
                 MPI_Send(&A[start_row][start_col], 1, block_mpi_t, i, 0, MPI_COMM_WORLD);
             }
         }
