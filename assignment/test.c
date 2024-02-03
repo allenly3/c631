@@ -1,53 +1,72 @@
 #include "stdio.h"
 #include "mpi.h"
 #define n 16
+#define block_size 4  // 4x4 block
 
 int main(int argc, char* argv[]) {
-    int p;
-    int my_rank;
+    int my_rank, num_procs;
     float A[n][n];
-    float T[n][n];
+    float T[block_size][block_size] = { 0.0 };  // Temporary block to receive data
     MPI_Status status;
-    MPI_Datatype column_mpi_t;
-    int i, j, k ;
+    MPI_Datatype block_mpi_t;
+    int i,j,time,start_row,start_col;
 
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
 
-    MPI_Type_vector(4, 4, 16, MPI_FLOAT, &column_mpi_t);
-    MPI_Type_commit(&column_mpi_t);
+    // Create a datatype for the 4x4 block
+    MPI_Type_vector(block_size, block_size, n, MPI_FLOAT, &block_mpi_t);
+    MPI_Type_commit(&block_mpi_t);
 
-for(k = 0 ; k < 4; k++){
     if (my_rank == 0) {
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                A[i][j] = (float) j;
-
-    
-        if(k == 0 ){
-            MPI_Send(&(A[0][0]), 1, column_mpi_t, k, 0,MPI_COMM_WORLD);
-            MPI_Recv(&(T[0][0]), 1, column_mpi_t, k, 0,MPI_COMM_WORLD, &status);
-        }else{
-            MPI_Send(&(A[0][k*4]), 1, column_mpi_t, k, 0,MPI_COMM_WORLD);
+        // Initialize the matrix in process 0
+        for ( i = 0; i < n; i++) {
+            for ( j = 0; j < n; j++) {
+                A[i][j] = (float)(i * n + j);
+            }
         }
+    }
 
-        
-    } else { 
-        for (i = 0; i < n; i++)
-            for (j = 0; j < n; j++)
-                T[i][j] = 0.0;
-                
-        MPI_Recv(&(T[0][k*4]), 1, column_mpi_t, 0, 0,MPI_COMM_WORLD, &status);
-        for (i = 0; i < n; i++) {
-            for (j = 0; j < n; j++)
-                printf("%4.1f ", T[i][j]);
+    MPI_Barrier(MPI_COMM_WORLD);  // Synchronize before starting the communication
+    
+    for(time = 0 ; time < 1; time ++){ // 16/4 = 4 , so need 4 times to 
+        if (my_rank < 4) {  // Only the first 4 processes participate
+            start_row = (my_rank / 2) * block_size;
+            start_col = (my_rank % 2) * block_size;
+
+            if (my_rank == 0) {
+                // Process 0 sends and receives the same block to itself
+                MPI_Sendrecv(&A[start_row][start_col], 1, block_mpi_t, 0, 0,
+                    &T, block_size * block_size, MPI_FLOAT, 0, 0,
+                    MPI_COMM_WORLD, &status);
+            }
+            else {
+                // Other processes only receive
+                MPI_Recv(&T, block_size * block_size, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, &status);
+            }
+
+            // Print the received block
+            printf("Process %d received:\n", my_rank);
+            for (i = 0; i < block_size; i++) {
+                for (j = 0; j < block_size; j++) {
+                    printf("%4.1f ", T[i][j]);
+                }
+                printf("\n");
+            }
             printf("\n");
         }
-        printf("\n");
-    }
-}
 
+        if (my_rank == 0) {
+            for (i = 1; i < num_procs && i < 4; i++) {   // Process 0 sends blocks to other processes
+                start_row = (i / 2) * block_size;
+                start_col = (i % 2) * block_size;
+                MPI_Send(&A[start_row][start_col], 1, block_mpi_t, i, 0, MPI_COMM_WORLD);
+            }
+        }
+    }
+
+    MPI_Type_free(&block_mpi_t);  // Cleanup the custom datatype
     MPI_Finalize();
-    return 0 ; 
-}  /* main */
-	
+    return 0;
+}
