@@ -1,0 +1,18 @@
+1.
+cp -r /cp631/lesson4 ~
+
+2. 
+// link math library
+mpicc -o a1q1p2.x a1q1p2.c -lm
+
+
+mpicc -o a1q1p1.x a1q1p1.c
+mpirun -np 40 ./a1q1p1.x
+
+
+3.
+nano FILE_NAME
+
+4. 
+gcc -fopenmp -O2 fibtask.c -o fibtask.x
+OMP_NUM_THREADS=4 ./fibtask.x
