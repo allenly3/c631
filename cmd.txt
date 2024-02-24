@@ -5,6 +5,7 @@ cp -r /cp631/lesson4 ~
 // link math library
 mpicc -o a1q1p2.x a1q1p2.c -lm
 
+mpicc -o a1q1p1.x a1q1p1.c -fopenmp
 
 mpicc -o a1q1p1.x a1q1p1.c
 mpirun -np 40 ./a1q1p1.x
@@ -14,5 +15,11 @@ mpirun -np 40 ./a1q1p1.x
 nano FILE_NAME
 
 4. 
-gcc -fopenmp -O2 fibtask.c -o fibtask.x
+gcc -fopenmp -O2 matrix_task.c -o matrix_task.x
 OMP_NUM_THREADS=4 ./fibtask.x
+
+
+
+5.
+gcc -o compute_pi_serial  compute_pi_serial.c
+./compute_pi_serial
