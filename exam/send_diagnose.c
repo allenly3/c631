@@ -3,6 +3,9 @@
 
 #define n 10
 
+// index : index_mpi_t
+// struct: diagonal_mpi_t
+
 int main(int argc, char* argv[]) {
     int p;
     int my_rank;
@@ -45,14 +48,14 @@ int main(int argc, char* argv[]) {
                 A[i][j] = (float) i + j;
 
         /* Send only the diagonal elements using the new datatype */
-        MPI_Send(&A[0][0], 1, index_mpi_t, 1, 0, MPI_COMM_WORLD);
+        MPI_Send(&A[0][0], 1, diagonal_mpi_t, 1, 0, MPI_COMM_WORLD);
     } else { /* my_rank == 1 */
         for (i = 0; i < n; i++)
             for (j = 0; j < n; j++)
                 T[i][j] = 0.0;
 
         /* Receive only the diagonal elements using the new datatype */
-        MPI_Recv(&T[0][0], 1, index_mpi_t, 0, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(&T[0][0], 1, diagonal_mpi_t, 0, 0, MPI_COMM_WORLD, &status);
 
         for (i = 0; i < n; i++) {
             for (j = 0; j < n; j++)
@@ -61,7 +64,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    MPI_Type_free(&index_mpi_t);
+    MPI_Type_free(&diagonal_mpi_t);
     MPI_Finalize();
     return 0;
 }
