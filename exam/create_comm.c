@@ -2,7 +2,6 @@
 #include "stdlib.h"
 #include "mpi.h"
 
-#define NPROCS 4
 
 int main(int argc, char *argv[]) {
   int rank, new_rank,
@@ -27,11 +26,11 @@ int main(int argc, char *argv[]) {
 
   /* Divide tasks into two distinct groups based upon rank */
   if (rank == 0 || rank == 2)
-    /* if rank = 0,1,2,3, put original processes 0,1,2,3
+    /* if rank = 0,2, put original processes 0,1,2,3
        into new_group */
     MPI_Group_incl(orig_group, 2, ranks1, &new_group);
   else
-    /* if rank = 4,5,6,7, put original processes 4,5,6,7
+    /* if rank = 1 3 4 5, put original processes 4,5,6,7
        into new_group */
     MPI_Group_incl(orig_group, 4, ranks2, &new_group);
 
