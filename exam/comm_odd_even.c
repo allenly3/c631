@@ -13,7 +13,11 @@ int main(int argc, char* argv[])
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
         
-  MPI_Comm_split(MPI_COMM_WORLD, my_rank%2, my_rank,
+  q = (int) sqrt((double) p);
+  /* my_rank is rank in MPI_COMM_WORLD.
+     q*q = p */
+  my_row = my_rank/q;
+  MPI_Comm_split(MPI_COMM_WORLD, my_row, my_rank,
                  &my_row_comm);
 
   /* Test the new communicators */
