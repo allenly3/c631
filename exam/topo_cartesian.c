@@ -2,7 +2,9 @@
 #include "stdio.h"
 #include "mpi.h"
 #include "math.h"
-
+/*For simplicity, 
+program assumes the number of processes, p, is a perfect square
+*/
 int main(int argc, char* argv[]) {
   int p, my_rank, q;
   MPI_Comm  grid_comm;
