@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
     float cur_st_range = my_rank * unit_range;
     float cur_ed_range = (my_rank + 1) * unit_range;
 
-    usleep(10000*my_rank); //Wait for 0.01*my_rank
+    //usleep(10000*my_rank); //Wait for 0.01*my_rank
     printf("%d: ", my_rank);
     for ( i = 0; i < new_size; i++)
     {
@@ -155,7 +155,7 @@ int main(int argc, char **argv) {
     printf("\n");
 
     double ed_time = MPI_Wtime();
-    printf("Process %d finished, Range: [%.3f,%.3f]\n\n", my_rank, cur_st_range, cur_ed_range);
+    printf("Process %d finished in %f s, Range: [%.3f,%.3f]\n\n", my_rank,ed_time - st_time, cur_st_range, cur_ed_range);
 
     // free memory
     free(data);
