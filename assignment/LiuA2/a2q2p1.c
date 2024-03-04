@@ -1,8 +1,3 @@
-/*
-    gcc -fopenmp -O2 a2q2p1.c -o a2q2p1.x -lmpi
-    ./q2_1.x 3000 3000
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
