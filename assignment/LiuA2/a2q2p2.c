@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <omp.h>
 #include <mpi.h>
 
 // compute the cumulative sum array B in parallel using OpenMP tasks
@@ -79,8 +80,6 @@ int main(int argc, char** argv) {
             A[i][j] = rand() % 11; // Random number between 0 and 10
         }
     }
-
-    struct timespec start, end;
     start_time = MPI_Wtime();
     // compute the cumulative sum array B in parallel
     computeCumulativeSumParallel(rows, cols, A, B);
