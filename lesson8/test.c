@@ -1,0 +1,59 @@
+#include "stdio.h"
+
+#define DIM 10
+
+int julia(int x, int y){
+    const float scaling = 1.5;
+    float scaled_x = scaling * (float)(DIM/2 - x)/(DIM/2);
+    float scaled_y = scaling * (float)(DIM/2 - y)/(DIM/2);
+
+    float c_real=-0.8f;
+    float c_imag=0.156f;
+
+    float z_real=scaled_x;
+    float z_imag=scaled_y;
+    float z_real_tmp;
+
+    int iter=0;
+    for(iter=0; iter<200; iter++){
+
+        z_real_tmp = z_real;
+        z_real =(z_real*z_real-z_imag*z_imag) +c_real;
+        z_imag = 2.0f*z_real_tmp*z_imag + c_imag;
+
+        if( (z_real*z_real+z_imag*z_imag) > 1000)
+            return 0;
+    }
+
+    return 1;
+}
+
+void kernel( int *arr ){
+    int x,y;
+    for (y=0; y<DIM; y++) {
+        for (x=0; x<DIM; x++) {
+            int offset = x + y * DIM;
+
+            int juliaValue = julia( x, y );
+            arr[offset] = juliaValue;
+        }
+    }
+}
+
+int main( void ) {
+    int x,y;
+    int arr[DIM*DIM];
+    FILE *out;
+    kernel(arr);
+
+    out = fopen( "julia.dat", "w" );
+    for (y=0; y<DIM; y++) {
+        for (x=0; x<DIM; x++) {
+            int offset = x + y * DIM;
+            if(arr[offset]==1)
+                fprintf(out,"%d %d \n",x,y);
+        }
+    }
+    fclose(out);
+
+}
