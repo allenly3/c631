@@ -1,3 +1,15 @@
+/*
+    Compile on graham with:
+
+    nvcc -arch=sm_60 -O2 q1p2.cu 
+
+    nvprof ./a.out
+
+    if want to see cpu profiling to compare GPU and CPU performance
+
+    nvprof  --cpu-profiling on   ./a.out
+
+*/
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -8,9 +20,16 @@
 __global__ void findMinimumDistance(double *particles, double *minDistance) {
     __shared__ double sharedMinDistances[BLOCK_SIZE];
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
-    int index = tid * 2;
+    /*
+        Same as part1
+        x: [0]
+        y: [1]
+        So double tid
+    */
+    int index = tid * 2; 
 
     double myMinDistance = DBL_MAX;
+
 
     if (index < N * 2) {
         double myX = particles[index];
