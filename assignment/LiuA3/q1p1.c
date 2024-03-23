@@ -11,7 +11,7 @@
 #include <time.h>
 #include <float.h>
 
-#define N 100  // 100 particles 
+#define N 1024*1024   //  particles amount
 
 
 /**
