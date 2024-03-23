@@ -14,7 +14,7 @@
 #include <math.h>
 #include <float.h>
 
-#define N 512*512  // 100 particles
+#define N 512*512  // particle amount
 #define BLOCK_SIZE 256 // Block size
 
 __global__ void findMinimumDistance(double *particles, double *minDistance) {
@@ -24,7 +24,7 @@ __global__ void findMinimumDistance(double *particles, double *minDistance) {
 
     double myMinDistance = DBL_MAX;
 
-    // Calculate the indices of the particles for this thread
+    // pair of particle
     int particle1_index = tid * 2;
     int particle2_index = particle1_index + 2;
 
