@@ -11,7 +11,7 @@
 #include <time.h>
 #include <float.h>
 
-#define N 10 
+#define N 100  // 100 particles 
 
 double computeDistance(double particles[N][2], int i, int j) {
     double dx = particles[i][0] - particles[j][0];
@@ -33,7 +33,6 @@ double findMinimumDistance(double particles[N][2]) {
 }
 
 int main() {
-    // 使用随机数生成粒子的坐标
     double particles[N][2];
     srand(time(NULL));
     for (int i = 0; i < N; ++i) {
@@ -41,10 +40,8 @@ int main() {
         particles[i][1] = (double)rand() / RAND_MAX;
     }
 
-    // 找到最小距离
     double minDistance = findMinimumDistance(particles);
 
-    // 输出结果
     printf("Minimum distance between particles: %lf\n", minDistance);
 
     return 0;
