@@ -14,7 +14,7 @@
 #include <math.h>
 #include <float.h>
 
-#define N 1024*1024   //   particles amount
+#define N 512*512   //   particles amount
 #define BLOCK_SIZE 256 // Block size
 
 __global__ void findMinimumDistance(double *particles, double *minDistance) {
