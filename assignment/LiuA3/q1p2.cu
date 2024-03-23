@@ -59,34 +59,34 @@ __global__ void findMinimumDistance(double *particles, double *minDistance) {
 }
 
 int main() {
-    double *d_particles, *d_minDistance;
-    double h_particles[N * 2];
-    double h_minDistance[N / BLOCK_SIZE + 1];
+    double *particles_dev, *minDistance_dev;
+    double particles_host[N * 2];
+    double minDistance_host[N / BLOCK_SIZE + 1];
 
     srand(time(NULL));
     for (int i = 0; i < N * 2; ++i) {
-        h_particles[i] = (double)rand() / RAND_MAX;
+        particles_host[i] = (double)rand() / RAND_MAX;
     }
 
-    cudaMalloc((void **)&d_particles, N * 2 * sizeof(double));
-    cudaMalloc((void **)&d_minDistance, (N / BLOCK_SIZE + 1) * sizeof(double));
+    cudaMalloc((void **)&particles_dev, N * 2 * sizeof(double));
+    cudaMalloc((void **)&minDistance_dev, (N / BLOCK_SIZE + 1) * sizeof(double));
 
-    cudaMemcpy(d_particles, h_particles, N * 2 * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(particles_dev, particles_host, N * 2 * sizeof(double), cudaMemcpyHostToDevice);
 
     int numBlocks = (N + BLOCK_SIZE - 1) / BLOCK_SIZE;
-    findMinimumDistance<<<numBlocks, BLOCK_SIZE>>>(d_particles, d_minDistance);
+    findMinimumDistance<<<numBlocks, BLOCK_SIZE>>>(particles_dev, minDistance_dev);
 
-    cudaMemcpy(h_minDistance, d_minDistance, (N / BLOCK_SIZE + 1) * sizeof(double), cudaMemcpyDeviceToHost);
+    cudaMemcpy(minDistance_host, minDistance_dev, (N / BLOCK_SIZE + 1) * sizeof(double), cudaMemcpyDeviceToHost);
 
-    double minDistance = h_minDistance[0];
+    double minDistance = minDistance_host[0];
     for (int i = 1; i < (N / BLOCK_SIZE + 1); ++i) {
-        minDistance = fmin(minDistance, h_minDistance[i]);
+        minDistance = fmin(minDistance, minDistance_host[i]);
     }
 
     printf("Minimum distance between particles (GPU): %lf\n", minDistance);
 
-    cudaFree(d_particles);
-    cudaFree(d_minDistance);
+    cudaFree(particles_dev);
+    cudaFree(minDistance_dev);
 
     return 0;
 }
