@@ -21,7 +21,6 @@ __global__ void findMinimumDistance(float *particles, float *minDistance) {
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
 
-    // Initialize the minimum distance to a large value
     float myMinDistance = FLT_MAX;
 
     // Calculate the distance between the current particle and all other particles
@@ -74,7 +73,7 @@ int main() {
         INDEX % 2 == 0 : x
         INDEX % 2 == 1 : y
     */
-    for (int i = 0; i < N * 2; ++i) {
+    for (int i = 0; i < N * 2; i++) {
         particles_host[i] = rand() / (float)RAND_MAX; 
         //printf("particle %f \n", particles_host[i]);
     }
@@ -97,7 +96,7 @@ int main() {
    
    //find min
     float minDistance = minDistance_host[0];
-    for (int i = 1; i < (N / BLOCK_SIZE + 1); ++i) {
+    for (int i = 1; i < (N / BLOCK_SIZE + 1); i++) {
         minDistance = fminf(minDistance, minDistance_host[i]);
     }
 
