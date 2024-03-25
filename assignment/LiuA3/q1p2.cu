@@ -23,7 +23,7 @@ __global__ void findMinimumDistance(float *particles, float *minDistance) {
 
     float myMinDistance = FLT_MAX;
 
-    // Calculate the distance between the current particle and all other particles
+    // calculate the distance between the current particle and all other particles
     for (int i = 0; i < N - 1; i += 2) {
 
         if(i == tid){

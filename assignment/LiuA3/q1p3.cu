@@ -18,15 +18,22 @@ __global__ void findMinimumDistance(float *particles, float *minDistance) {
     __shared__ float distances[BLOCK_SIZE];
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
-
     float myMinDistance = FLT_MAX;
 
-    // Calculate the distance between the current pair of particles handled by this thread
-    for (int i = tid + 2; i < N; i++) {
-        float dx = particles[tid] - particles[i];
-        float dy = particles[tid + N] - particles[i + N];
-        float distance = sqrtf(dx * dx + dy * dy);
-        myMinDistance = fminf(myMinDistance, distance);
+    // calculate the distance between each pair of particles
+    for (int i = 0; i < N; i+=2) {
+        for (int j = i + 2; j < N; j+=2) {
+            // calculate the target pair of particles
+            int index = i * (N - 1) - (i * (i + 1)) / 2 + j - 1;
+            
+            // Only allow one thread to handle each pair of particles
+            if (tid == index) {
+                float dx = particles[i ] - particles[j ];
+                float dy = particles[i + 1] - particles[j  + 1];
+                float distance = sqrtf(dx * dx + dy * dy);
+                myMinDistance = fminf(myMinDistance, distance);
+            }
+        }
     }
 
     // Store the minimum distance computed by this thread in shared memory
@@ -60,9 +67,18 @@ int main() {
     cudaMalloc((void **)&minDistance_dev, (N / BLOCK_SIZE + 1) * sizeof(float));
 
     // Initialize particle coordinates on the host
-    for (int i = 0; i < N * 2; ++i) {
+    /*
+        Data structure
+        particle[INDEX]:
+        INDEX % 2 == 0 : x
+        INDEX % 2 == 1 : y
+    */
+    for (int i = 0; i < N * 2; i++) {
         particles_host[i] = rand() / (float)RAND_MAX; 
+        //printf("particle %f \n", particles_host[i]);
     }
+    //printf(" \n\n\n\n");
+
 
      /* copy arrays to device memory (synchronous) */
     cudaMemcpy(particles_dev, particles_host, N * 2 * sizeof(float), cudaMemcpyHostToDevice);
